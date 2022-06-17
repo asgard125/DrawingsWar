@@ -10,6 +10,8 @@ class User(AbstractUser):
     defeats = models.IntegerField(default=0)
     level_score = models.IntegerField(default=0)
     money = models.IntegerField(default=100)
+    deck_size = models.IntegerField(default=3)
+    units_in_deck = models.IntegerField(default=0)
 
     REQUIRED_FIELDS = ('game_name', )
 
