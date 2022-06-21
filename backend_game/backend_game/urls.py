@@ -17,10 +17,17 @@ from django.contrib import admin
 from django.template.defaulttags import url
 from django.urls import path, re_path, include
 from game_app.views import *
+from rest_framework import routers
+
+router = routers.SimpleRouter()
+router.register(r'battleunit', BattleUnitAPIView, basename='battleunit')
+router.register(r'user', UserAPIView, basename='user')
+router.register(r'playerbattleunit', PlayerBattleUnitAPIView, basename='playerbattleunit')
+router.register(r'battlehistory', BattleHistoryAPIView, basename='battlehistory')
 
 urlpatterns = [
-    re_path(r'^api/v1/auth/', include('djoser.urls')),
+    re_path(r'^auth/', include('djoser.urls')),
     re_path(r'^auth/', include('djoser.urls.authtoken')),
     path('admin/', admin.site.urls),
-    path('api/v1/battleunit', BattleUnitAPIView.as_view()),
+    path('api/v1/', include(router.urls))
 ]

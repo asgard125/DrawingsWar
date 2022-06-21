@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
-    game_name = models.CharField(max_length=30, blank=True, verbose_name='Игровое имя', unique=False)
+    game_name = models.CharField(max_length=30, blank=False, verbose_name='Игровое имя', unique=False)
     rating = models.IntegerField(default=0)
     wins = models.IntegerField(default=0)
     defeats = models.IntegerField(default=0)
@@ -22,6 +22,7 @@ class BattleUnit(models.Model):
     shop_price = models.IntegerField(blank=True, null=True)
     start_level_buy = models.IntegerField(default=1)
     max_level = models.IntegerField(blank=True, null=True)
+    start_upgrade_price = models.IntegerField(blank=True, null=True)
     start_health_points = models.IntegerField(blank=True, null=True)
     start_shield_level = models.IntegerField(blank=True, null=True)
     start_attack_points = models.IntegerField(blank=True, null=True)
@@ -44,6 +45,7 @@ class PlayerBattleUnit(models.Model):
     in_deck = models.BooleanField(default=False)
     on_market = models.BooleanField(default=False)
     market_price = models.IntegerField(blank=True, null=True)
+    upgrade_price = models.IntegerField(blank=True, null=True)
     level = models.IntegerField(blank=True, null=True)
     health_points = models.IntegerField(blank=True, null=True)
     attack_points = models.IntegerField(blank=True, null=True)
@@ -51,9 +53,6 @@ class PlayerBattleUnit(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     base_unit = models.ForeignKey(BattleUnit, on_delete=models.CASCADE, null=True)
     time_create = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
 
     class Meta:
         verbose_name = 'Персонаж игрока'
