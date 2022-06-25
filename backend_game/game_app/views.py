@@ -34,7 +34,6 @@ class PlayerBattleUnitAPIView(GenericViewSet):
         return Response(serializer.data)
 
     def create(self, request):
-        new_playerunit = PlayerBattleUnit(user=request.user)
         if 'id' in request.data:
             if request.data['id'].isdigit():
                 base_unit = get_object_or_404(BattleUnit, pk=int(request.data['id']))
@@ -49,15 +48,7 @@ class PlayerBattleUnitAPIView(GenericViewSet):
         if base_unit.start_level_buy > request.user.level_score // 100:
             return Response({'status': 'fail', 'details': 'user level is too low'})
 
-        new_playerunit.base_unit = base_unit
-        new_playerunit.level = 1
-        new_playerunit.health_points = base_unit.start_health_points
-        new_playerunit.attack_points = base_unit.start_attack_points
-        new_playerunit.shield_level = base_unit.start_shield_level
-        new_playerunit.upgrade_price = base_unit.start_upgrade_price
-        new_playerunit.save()
-        request.user.money = request.user.money - base_unit.shop_price
-        request.user.save()
+        PlayerBattleUnit.buy_unit_in_shop(request.user, base_unit)
         return Response({'status': 'ok', 'details': 'ok'})
 
     def retrieve(self, request, pk=None):
@@ -70,14 +61,7 @@ class PlayerBattleUnitAPIView(GenericViewSet):
         playerunit = get_object_or_404(PlayerBattleUnit, pk=pk)
         if request.user.money < playerunit.upgrade_price:
             return Response({'status': 'fail', 'details': 'not enough money'})
-        playerunit.level = playerunit.level + 1
-        playerunit.upgrade_price = playerunit.upgrade_price * 1.1
-        playerunit.attack_points = round(playerunit.attack_points * 1.5)
-        playerunit.health_points = round(playerunit.health_points * 1.5)
-        playerunit.shield_level = round(playerunit.shield_level * 1.1)
-        request.user.money = request.user.money - playerunit.upgrade_price
-        request.user.save()
-        playerunit.save()
+        PlayerBattleUnit.upgrade_unit(request.user, playerunit)
         return Response({'status': 'ok', 'details': 'ok'})
 
     @action(detail=False, methods=['put'])
@@ -93,11 +77,19 @@ class PlayerBattleUnitAPIView(GenericViewSet):
             return Response({'status': 'fail', 'details': 'cannot buy yourself unit'})
         if request.user.money < playerunit.market_price:
             return Response({'status': 'fail', 'details': 'not enough money'})
-        request.user.money = request.user.money - playerunit.market_price
-        playerunit.user = request.user
+        request.user.money = request.user.money - playerunit.market_price  # изменение денег для покупателя
+        playerunit.user.money = playerunit.user.money + playerunit.market_price  # изменение денег для продавца
+        playerunit.user = request.user  # изменение владельца юнита
+        playerunit.on_market = False
         request.user.save()
         playerunit.save()
         return Response({'status': 'ok', 'details': 'ok'})
+
+    @action(detail=False, methods=['get'])
+    def market_list(self, request):
+        queryset = PlayerBattleUnit.objects.filter(on_market=True)
+        serializer = PlayerBattleUnitSerializer(queryset, many=True)
+        return Response(serializer.data)
 
     def update(self, request, pk=None):
         playerunit = get_object_or_404(PlayerBattleUnit, pk=pk)
@@ -105,7 +97,9 @@ class PlayerBattleUnitAPIView(GenericViewSet):
             return Response({'status': 'fail', 'details': 'action is required'})
         if request.data['action'] == 'set_on_market':
             playerunit.on_market = True
-            playerunit.in_deck = False
+            if playerunit.in_deck:
+                playerunit.in_deck = False
+                playerunit.user.units_in_deck = playerunit.user.units_in_deck - 1
             if 'market_price' not in request.data:
                 return Response({'status': 'fail', 'details': 'wrong market price'})
             if not request.data['market_price'].isdigit():
@@ -119,6 +113,7 @@ class PlayerBattleUnitAPIView(GenericViewSet):
             if playerunit.on_market:
                 return Response({'status': 'fail', 'details': 'unit is on market'})
             playerunit.in_deck = True
+            playerunit.user.units_in_deck = playerunit.user.units_in_deck + 1
             playerunit.save()
         return Response({'status': 'ok', 'details': 'ok'})
 

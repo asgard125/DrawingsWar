@@ -5,7 +5,7 @@ from .models import *
 class PublicUserDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('game_name', 'level_score', 'rating', 'wins', 'defeats')
+        fields = ('id', 'game_name', 'level_score', 'rating', 'wins', 'defeats')
 
 
 class SelfUserDataSerializer(serializers.ModelSerializer):
@@ -21,9 +21,12 @@ class BattleUnitSerializer(serializers.ModelSerializer):
 
 
 class PlayerBattleUnitSerializer(serializers.ModelSerializer):
+    user = PublicUserDataSerializer()
+
     class Meta:
         model = PlayerBattleUnit
         fields = '__all__'
+        depth = 1
 
 
 class BattleHistorySerializer(serializers.ModelSerializer):

@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
-    'game_app.apps.GameAppConfig'
+    'game_app.apps.GameAppConfig',
+    'channels',
+    'battle_app.apps.BattleAppConfig'
 ]
 
 MIDDLEWARE = [
@@ -121,8 +123,20 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+ASGI_APPLICATION = 'backend_game.asgi.application'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)]
+        },
+},
+}
+
 
 AUTH_USER_MODEL = 'game_app.User'
 

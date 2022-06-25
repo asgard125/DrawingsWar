@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import AbstractUser
+from .game_consts import *
 
 
 class User(AbstractUser):
@@ -9,8 +10,8 @@ class User(AbstractUser):
     wins = models.IntegerField(default=0)
     defeats = models.IntegerField(default=0)
     level_score = models.IntegerField(default=0)
-    money = models.IntegerField(default=100)
-    deck_size = models.IntegerField(default=3)
+    money = models.IntegerField(default=START_MONEY)
+    deck_size = models.IntegerField(default=START_DECK_SIZE)
     units_in_deck = models.IntegerField(default=0)
 
     REQUIRED_FIELDS = ('game_name', )
@@ -57,6 +58,30 @@ class PlayerBattleUnit(models.Model):
     class Meta:
         verbose_name = 'Персонаж игрока'
         verbose_name_plural = 'Персонажи игрока'
+
+    @staticmethod
+    def buy_unit_in_shop(user, base_unit):
+        new_playerunit = PlayerBattleUnit(user=user)
+        new_playerunit.base_unit = base_unit
+        new_playerunit.level = 1
+        new_playerunit.health_points = base_unit.start_health_points
+        new_playerunit.attack_points = base_unit.start_attack_points
+        new_playerunit.shield_level = base_unit.start_shield_level
+        new_playerunit.upgrade_price = base_unit.start_upgrade_price
+        new_playerunit.save()
+        user.money = user.money - base_unit.shop_price
+        user.save()
+
+    @staticmethod
+    def upgrade_unit(user, playerunit):
+        playerunit.level = playerunit.level + 1
+        playerunit.upgrade_price = playerunit.upgrade_price * UPGRADE_PRICE_COEF
+        playerunit.attack_points = round(playerunit.attack_points * UPGRADE_ATTACK_POINTS_COEF)
+        playerunit.health_points = round(playerunit.health_points * UPGRADE_HEALTH_POINTS_COEF)
+        playerunit.shield_level = round(playerunit.shield_level * UPGRADE_SHIELD_POINTS_COEF)
+        user.money = user.money - playerunit.upgrade_price
+        user.save()
+        playerunit.save()
 
 
 class BattleHistory(models.Model):

@@ -26,6 +26,7 @@ router.register(r'playerbattleunit', PlayerBattleUnitAPIView, basename='playerba
 router.register(r'battlehistory', BattleHistoryAPIView, basename='battlehistory')
 
 urlpatterns = [
+    path('battle/', include('battle_app.urls')),
     re_path(r'^auth/', include('djoser.urls')),
     re_path(r'^auth/', include('djoser.urls.authtoken')),
     path('admin/', admin.site.urls),
