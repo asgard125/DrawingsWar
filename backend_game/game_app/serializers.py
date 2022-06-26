@@ -11,7 +11,7 @@ class PublicUserDataSerializer(serializers.ModelSerializer):
 class SelfUserDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('game_name', 'level_score', 'rating', 'wins', 'defeats', 'username', 'money', 'deck_size', 'units_in_deck')
+        fields = ('id', 'game_name', 'level_score', 'rating', 'wins', 'defeats', 'username', 'money', 'deck_size', 'units_in_deck')
 
 
 class BattleUnitSerializer(serializers.ModelSerializer):
