@@ -105,16 +105,21 @@ class PlayerBattleUnitAPIView(GenericViewSet):
             if not request.data['market_price'].isdigit():
                 return Response({'status': 'fail', 'details': 'wrong market price'})
             playerunit.market_price = int(request.data['market_price'])
-            playerunit.save()
         elif request.data['action'] == 'delete_from_market':
             playerunit.on_market = False
-            playerunit.save()
         elif request.data['action'] == 'set_in_deck':
             if playerunit.on_market:
                 return Response({'status': 'fail', 'details': 'unit is on market'})
             playerunit.in_deck = True
             playerunit.user.units_in_deck = playerunit.user.units_in_deck + 1
-            playerunit.save()
+        elif request.data['action'] == 'delete_from_deck':
+            if playerunit.on_market:
+                return Response({'status': 'fail', 'details': 'unit is on market'})
+            if playerunit.in_deck:
+                playerunit.in_deck = False
+                playerunit.user.units_in_deck = playerunit.user.units_in_deck - 1
+        playerunit.user.save()
+        playerunit.save()
         return Response({'status': 'ok', 'details': 'ok'})
 
 
