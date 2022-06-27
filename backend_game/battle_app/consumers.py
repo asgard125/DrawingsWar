@@ -1,14 +1,19 @@
 import json
 
 from asgiref.sync import async_to_sync
+from channels.consumer import SyncConsumer
 from channels.generic.websocket import WebsocketConsumer
 
+from battle_app.engine import GameEngine
 
-class BattleConsumer(WebsocketConsumer):
+
+class PlayerConsumer(WebsocketConsumer):
     def connect(self):
+
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'room_%s' % self.room_name
-
+        self.player_deck = None
+        self.player_id = None
 
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name,
@@ -27,7 +32,6 @@ class BattleConsumer(WebsocketConsumer):
         )
 
     def receive(self, text_data):
-        print(text_data)
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name, {
                 'type': 'run_game',
@@ -42,3 +46,17 @@ class BattleConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps({
             'payload': data['message']
         }))
+
+
+class EngineConsumer(SyncConsumer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.group_name = "snek_game"
+        self.engine = GameEngine(self.group_name)
+        self.engine.start()
+
+    def player_new(self, event):
+        pass
+
+    def player_event(self, event):
+        pass

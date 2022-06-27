@@ -24,6 +24,7 @@ router.register(r'battleunit', BattleUnitAPIView, basename='battleunit')
 router.register(r'user', UserAPIView, basename='user')
 router.register(r'playerbattleunit', PlayerBattleUnitAPIView, basename='playerbattleunit')
 router.register(r'battlehistory', BattleHistoryAPIView, basename='battlehistory')
+router.register(r'battlesession', BattleSessionAPIView, basename='battlesession')
 
 urlpatterns = [
     path('battle/', include('battle_app.urls')),

@@ -9,10 +9,10 @@ https://docs.djangoproject.com/en/4.0/howto/deployment/asgi/
 
 import os
 from battle_app.middleware import TokenAuthMiddleware
-from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.routing import ProtocolTypeRouter, URLRouter, ChannelNameRouter
 from django.core.asgi import get_asgi_application
 from channels.security.websocket import AllowedHostsOriginValidator
-
+from battle_app.consumers import EngineConsumer, PlayerConsumer
 import battle_app.routing
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend_game.settings')
@@ -28,4 +28,5 @@ application = ProtocolTypeRouter({
             )
         )
     ),
+    "channel": ChannelNameRouter({"game_engine": EngineConsumer}),
 })

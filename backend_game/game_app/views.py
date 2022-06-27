@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
+from battle_app.models import BattleSession
 from .models import *
 from rest_framework.response import Response
 from .permissions import IsCurrentUser
@@ -20,6 +21,7 @@ class BattleUnitAPIView(viewsets.ReadOnlyModelViewSet):
 
 class PlayerBattleUnitAPIView(GenericViewSet):
     queryset = PlayerBattleUnit.objects.all()
+    serializer_class = PlayerBattleUnitSerializer
 
     def get_permissions(self):
         if self.action in ('update', 'partial_update', 'upgrade'):
@@ -126,6 +128,7 @@ class PlayerBattleUnitAPIView(GenericViewSet):
 class BattleHistoryAPIView(GenericViewSet):
     queryset = BattleHistory.objects.all()
     permission_classes = (IsCurrentUser,)
+    serializer_class = BattleHistorySerializer
 
     def list(self, request):
         history = BattleHistory.objects.filter(user=request.user, order_by='-time_create')
@@ -140,6 +143,7 @@ class BattleHistoryAPIView(GenericViewSet):
 
 class UserAPIView(GenericViewSet):
     queryset = User.objects.all()
+    serializer_class = PublicUserDataSerializer
 
     def get_permissions(self):
         if self.action in ('update', 'partial_update'):
@@ -164,5 +168,16 @@ class UserAPIView(GenericViewSet):
     def current_user(self, request):
         serializer = SelfUserDataSerializer(request.user, many=False)
         return Response({'user': serializer.data})
+
+
+class BattleSessionAPIView(GenericViewSet):
+    queryset = BattleSession.objects.all()
+    permission_classes = (IsAuthenticated,)
+
+    @action(methods=['get'], detail=False)
+    def get_available_room(self, request):
+        room_code = BattleSession.get_available_room()
+        return Response({'room_code': room_code})
+
 
 
