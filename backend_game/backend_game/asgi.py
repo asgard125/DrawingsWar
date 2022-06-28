@@ -21,12 +21,10 @@ django_asgi_app = get_asgi_application()
 
 application = ProtocolTypeRouter({
   "http": django_asgi_app,
-  "websocket": AllowedHostsOriginValidator(
-        TokenAuthMiddleware(
+  "websocket": TokenAuthMiddleware(
             URLRouter(
                 battle_app.routing.websocket_urlpatterns
-            )
         )
     ),
-    "channel": ChannelNameRouter({"game_engine": EngineConsumer}),
+    "channel": ChannelNameRouter({"game_engine": EngineConsumer.as_asgi()}),
 })

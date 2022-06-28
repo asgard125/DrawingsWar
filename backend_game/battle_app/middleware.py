@@ -23,8 +23,6 @@ class TokenAuthMiddleware(BaseMiddleware):
     async def __call__(self, scope, receive, send):
         close_old_connections()
         scope = dict(scope)
-        print(scope)
         token = scope["query_string"].decode()
         scope['user'] = await get_user_by_token(token)
-        print(scope['user'])
         return await super().__call__(scope, receive, send)
