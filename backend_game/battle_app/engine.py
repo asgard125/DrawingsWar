@@ -8,8 +8,9 @@ from channels.layers import get_channel_layer
 
 
 class Unit:
-    def __init__(self, x=None, y=None, health_points=None, attack_points=None, shield_level=None,
-                 max_move_range=None, max_attack_range=None, battle_class=None):
+    def __init__(self, owner_id=None, x=None, y=None, health_points=None, attack_points=None, shield_level=None,
+                 max_move_range=None, max_attack_range=None, battle_class=None, name=None):
+        self.owner_id = owner_id
         self.x = x
         self.y = y
         self.health_points = health_points
@@ -18,6 +19,23 @@ class Unit:
         self.max_move_range = max_move_range
         self.max_attack_range = max_attack_range
         self.battle_class = battle_class
+        self.name = name
+
+    def render(self):
+        return {'unit':
+                    {
+                     'x': self.x,
+                     'y': self.y,
+                     'health_points': self.health_points,
+                     'attack_points': self.attack_points,
+                     'shield_level': self.shield_level,
+                     'max_move_range': self.max_move_range,
+                     'max_attack_range': self.max_attack_range,
+                     'battle_class': self.battle_class,
+                     'name': self.name,
+                     'owner_id': self.owner_id
+                    }
+                }
 
 
 class Player:
@@ -26,16 +44,6 @@ class Player:
         self.player_id = player_id
         self.game_name = game_name
         self.rating = rating
-        self.deck = []
-
-    def add_deck(self, deck):
-        pass
-
-    def unit_in_cords(self, x, y):
-        for unit in self.deck:
-            if unit.x == x and unit.y == y:
-                return True
-        return False
 
 
 class GameEngine(threading.Thread):
@@ -53,29 +61,43 @@ class GameEngine(threading.Thread):
         self.players_in_group = 1
         self.board = [[None for _ in range(self.x_dim)] for i in range(self.y_dim)]
         self.has_changes = False
-        self.game_state = {}
-        self.player_queue = OrderedDict()
+        self.game_state = 'waiting'
+        self.players = []
+        self.winner = None
         self.channel_layer = get_channel_layer()
         self.player_lock = threading.Lock()
+
+    def handle_new_player(self, data):
+        pass
+
+    def handle_player_event(self, data):
+        pass
 
     def run(self) -> None:
         print('game engine started', self.group_name)
         while True:
             # смена хода, обработка действий
-            async_to_sync(self.channel_layer.group_send)(
-                self.group_name, {"type": "game.update", "state": 'kek', "timer": self.timer + 1,
-                                  "player_turn": self.player_turn + 1}
-            )
+            if self.game_state == 'started':
+                self.send_game_state()
+                self.timer = (self.timer + self.tick_rate) % self.move_time
+                if self.timer == 0:
+                    self.player_turn = (self.player_turn + 1) % self.player_count
+            else:
+                async_to_sync(self.channel_layer.group_send)(
+                    self.group_name, {"type": "game.update", 'game': {"state": self.game_state, 'winner': self.winner}}
+                )
             time.sleep(self.tick_rate)
-            self.timer = (self.timer + self.tick_rate) % self.move_time
-            if self.timer == 0:
-                self.player_turn = (self.player_turn + 1) % self.player_count
 
-    def send_game_board_state(self):
-        state_json = {
-            'event': 'no',
-            'board': 'no'
-        }
+    def send_game_state(self):
+        rendered_board = []
+        for layer in self.board:
+            rendered_board.append([i.render() if i is not None else i for i in layer])
+        state_json = {"type": "game.update", 'game': {
+                        "state": self.game_state, "timer": self.timer + 1,
+                        "board": rendered_board, "player_turn": self.player_turn}}
         async_to_sync(self.channel_layer.group_send)(
-            self.group_name, {"type": "game_update", "state": state_json}
+            self.group_name, state_json
         )
+
+    def check_win(self):
+        pass

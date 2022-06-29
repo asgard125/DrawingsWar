@@ -20,11 +20,14 @@ class PlayerConsumer(AsyncWebsocketConsumer):
         rooms = await sync_to_async(BattleSession.objects.filter, thread_sensitive=True)(room_code=int(self.scope['url_route']['kwargs']['room_name']))
         rooms = await sync_to_async(len, thread_sensitive=True)(rooms)
         if rooms > 0:
+
             self.room_name = self.scope['url_route']['kwargs']['room_name']
             self.room_group_name = 'room_%s' % self.room_name
             self.user_deck = await sync_to_async(_get_user_deck, thread_sensitive=True)(user=self.scope['user'])
             self.user_game_name = self.scope['user'].game_name
             self.user_rating = self.scope['user'].rating
+            self.user_id = self.scope['user'].id
+
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
             await self.accept()
             print('User connected')
@@ -32,24 +35,24 @@ class PlayerConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.send(
                 "game_engine",
                 {"type": "player.new", "game_name": self.user_game_name, "channel": self.channel_name,
-                 'group_name': self.room_group_name, 'deck': self.user_deck, 'rating': self.user_rating},
+                 'group_name': self.room_group_name, 'deck': self.user_deck, 'rating': self.user_rating,
+                 'player_id': self.user_id},
             )
 
     async def disconnect(self, close_code):
         print('user left')
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
-    # Receive message from Websocket
     async def receive(self, text_data=None, bytes_data=None):
         content = json.loads(text_data)
-        print(content)
+        await self.channel_layer.send(
+            "game_engine",
+            {"type": "player.event", 'data': content['data']}
+        )
 
-    # Send game data to room group after a Tick is processed
     async def game_update(self, event):
-        print("Game Update, timer, player_turn", event['timer'], event['player_turn'])
-        # Send message to WebSocket
-        state = event["state"]
-        await self.send(json.dumps(state))
+        game = event["game"]
+        await self.send(json.dumps(game))
 
 
 class EngineConsumer(SyncConsumer):
@@ -63,8 +66,8 @@ class EngineConsumer(SyncConsumer):
         if self.group_name == "base_group_name":
             self.group_name = event['group_name']
             self.engine.group_name = self.group_name
-        print(event["deck"])
         print("Player Joined: %s", event["game_name"])
+        self.engine.handle_new_player(event)
 
     def player_event(self, event):
-        pass
+        self.engine.handle_player_event(event)
