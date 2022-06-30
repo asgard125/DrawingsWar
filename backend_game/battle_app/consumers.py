@@ -15,11 +15,16 @@ def _get_user_deck(user=None):
     return PlayerBattleUnitSerializer(queryset, many=True).data
 
 
+def _is_room_exist_and_available(room_code=None):
+    rooms = BattleSession.objects.filter(room_code=room_code)
+    rooms = [obj for obj in rooms if obj.players_count < 2]
+    return len(rooms) > 0
+
+
 class PlayerConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        rooms = await sync_to_async(BattleSession.objects.filter, thread_sensitive=True)(room_code=int(self.scope['url_route']['kwargs']['room_name']))
-        rooms = await sync_to_async(len, thread_sensitive=True)(rooms)
-        if rooms > 0:
+        room_is_available = await sync_to_async(_is_room_exist_and_available, thread_sensitive=True)(room_code=self.scope['url_route']['kwargs']['room_name'])
+        if room_is_available and not self.scope['user'].is_anonymous:
 
             self.room_name = self.scope['url_route']['kwargs']['room_name']
             self.room_group_name = 'room_%s' % self.room_name
@@ -34,7 +39,7 @@ class PlayerConsumer(AsyncWebsocketConsumer):
             print('joined new player')
             await self.channel_layer.send(
                 "game_engine",
-                {"type": "player.new", "game_name": self.user_game_name, "channel": self.channel_name,
+                {"type": "player.new", 'room_code': self.room_name, "game_name": self.user_game_name, "channel": self.channel_name,
                  'group_name': self.room_group_name, 'deck': self.user_deck, 'rating': self.user_rating,
                  'player_id': self.user_id},
             )
@@ -65,6 +70,7 @@ class EngineConsumer(SyncConsumer):
     def player_new(self, event):
         if self.group_name == "base_group_name":
             self.group_name = event['group_name']
+            self.room_code = event['room_code']
             self.engine.group_name = self.group_name
         print("Player Joined: %s", event["game_name"])
         self.engine.handle_new_player(event)

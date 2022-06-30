@@ -16,6 +16,19 @@ class User(AbstractUser):
 
     REQUIRED_FIELDS = ('game_name', )
 
+    def update_after_battle(self, result):
+        if result == 'win':
+            self.money += WIN_MONEY
+            self.rating += WIN_RATING
+            self.level_score += WIN_LEVEL
+            self.wins += 1
+        elif result == 'loose':
+            self.money += LOOSE_MONEY
+            self.rating = max(self.rating + LOOSE_LEVEL, 0)
+            self.level_score += LOOSE_LEVEL
+            self.defeats += 1
+        self.save()
+
 
 class BattleUnit(models.Model):
     name = models.CharField(max_length=30, blank=True, verbose_name='Название', unique=True)
