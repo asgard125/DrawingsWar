@@ -10,7 +10,7 @@ class BattleSession(models.Model):
     @staticmethod
     def get_available_room():
         rooms = BattleSession.objects.all().order_by('-room_code')
-        available_rooms = [i for i in rooms if i.player_count < 2]
+        available_rooms = [i for i in rooms if i.players_count < 2]
         if len(available_rooms) == 0:
             if len(rooms) > 0:
                 room_code = int(rooms[0].room_code) + 1

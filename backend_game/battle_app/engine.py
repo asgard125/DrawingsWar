@@ -12,9 +12,9 @@ from channels.layers import get_channel_layer
 
 
 class Unit:
-    def __init__(self, owner_id=None, x=None, y=None, health_points=None, attack_points=None, shield_level=None,
+    def __init__(self, player_id=None, x=None, y=None, health_points=None, attack_points=None, shield_level=None,
                  max_move_range=None, max_attack_range=None, battle_class=None, name=None):
-        self.owner_id = int(owner_id)
+        self.player_id = int(player_id)
         self.x = x
         self.y = y
         self.health_points = health_points
@@ -107,7 +107,6 @@ class Board:
         return rendered_board
 
 
-
 class GameEngine(threading.Thread):
     move_time = 16
     tick_rate = 1
@@ -121,8 +120,8 @@ class GameEngine(threading.Thread):
         self.player_turn = 0
         self.group_name = group_name
         self.room_code = None
-        self.players_in_group = 1
-        self.board = Board()
+        self.players_in_group = 0
+        self.board = Board(x_dim=self.x_dim, y_dim=self.y_dim)
         self.has_changes = False
         self.game_state = 'waiting'
         self.players = []
@@ -146,7 +145,8 @@ class GameEngine(threading.Thread):
                                             max_move_range=unit['base_unit']['max_move_range'],
                                             max_attack_range=unit['base_unit']['max_attack_range'],
                                             battle_class=unit['base_unit']['battle_class'],
-                                            name=unit['base_unit']['name'], owner_id=data['player_id'])
+                                            name=unit['base_unit']['name'], player_id=data['player_id'])
+            layer += 1
 
     def handle_player_event(self, event):
         player_id = int(event['data']['player_id'])
@@ -155,7 +155,10 @@ class GameEngine(threading.Thread):
         selected_y = int(event['data']['selected']['y'])
         move_x = int(event['data']['move']['x'])
         move_y = int(event['data']['move']['y'])
-        if event_type == 'move':
+        room = BattleSession.objects.get(room_code=self.room_code)
+        room.players_count += 1
+        room.save()
+        if event_type == 'move' and self.players[self.player_turn].player_id == player_id:
             if self.board.player_attack_on(player_id=player_id, s_x=selected_x, s_y=selected_y, m_x=move_x, m_y=move_y):
                 self.timer = 0
                 self.player_turn = (self.player_turn + 1) % self.player_count
@@ -179,10 +182,10 @@ class GameEngine(threading.Thread):
             time.sleep(self.tick_rate)
 
     def send_game_state(self):
-
+        print(self.player_turn)
         state_json = {"type": "game.update", 'game': {
                         "state": self.game_state, "timer": self.timer + 1,
-                        "board": self.board.render(), "player_id_turn": self.players[self.player_turn].id}}
+                        "board": self.board.render(), "player_id_turn": self.players[self.player_turn].player_id}}
         async_to_sync(self.channel_layer.group_send)(
             self.group_name, state_json
         )

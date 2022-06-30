@@ -24,6 +24,7 @@ def _is_room_exist_and_available(room_code=None):
 class PlayerConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         room_is_available = await sync_to_async(_is_room_exist_and_available, thread_sensitive=True)(room_code=self.scope['url_route']['kwargs']['room_name'])
+        print(room_is_available)
         if room_is_available and not self.scope['user'].is_anonymous:
 
             self.room_name = self.scope['url_route']['kwargs']['room_name']
@@ -31,7 +32,7 @@ class PlayerConsumer(AsyncWebsocketConsumer):
             self.user_deck = await sync_to_async(_get_user_deck, thread_sensitive=True)(user=self.scope['user'])
             self.user_game_name = self.scope['user'].game_name
             self.user_rating = self.scope['user'].rating
-            self.user_id = self.scope['user'].id
+            self.user_id = int(self.scope['user'].id)
 
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
             await self.accept()
@@ -45,14 +46,18 @@ class PlayerConsumer(AsyncWebsocketConsumer):
             )
 
     async def disconnect(self, close_code):
-        print('user left')
+        await self.channel_layer.send(
+            "game_engine",
+            {"type": "player.disconnect"}
+        )
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data=None, bytes_data=None):
         content = json.loads(text_data)
+        content['data']["player_id"] = self.user_id
         await self.channel_layer.send(
             "game_engine",
-            {"type": "player.event", 'data': content['data']}
+            {"type": "player.event", "data": content['data']}
         )
 
     async def game_update(self, event):
@@ -77,3 +82,6 @@ class EngineConsumer(SyncConsumer):
 
     def player_event(self, event):
         self.engine.handle_player_event(event)
+
+    def player_disconnect(self, event):
+        pass
