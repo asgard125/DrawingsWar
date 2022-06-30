@@ -88,7 +88,7 @@ class Board:
         # horizontal check
         if m_y == s_y:
             for x in range(min(m_x, s_x), max(m_x, s_x) + 1):
-                if self.board[s_y][s_x] is not None and x != s_x:
+                if self.board[s_y][x] is not None and x != s_x:
                     return False
         # vertical check
         if m_x == s_x:
