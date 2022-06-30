@@ -73,7 +73,7 @@ class Board:
             self.board[m_y][m_x].shield_level //= 2
         else:
             self.board[m_y][m_x].health_points -= self.board[s_y][s_x].attack_points
-        if self.board[m_y][m_x].health_points == 0:
+        if self.board[m_y][m_x].health_points <= 0:
             self.board[m_y][m_x] = None
         return True
 
