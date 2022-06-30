@@ -73,9 +73,9 @@ class EngineConsumer(SyncConsumer):
         self.engine.start()
 
     def player_new(self, event):
-        if self.group_name == "base_group_name":
+        if self.engine.group_name == "base_group_name":
             self.group_name = event['group_name']
-            self.room_code = event['room_code']
+            self.engine.room_code = event['room_code']
             self.engine.group_name = self.group_name
         print("Player Joined: %s", event["game_name"])
         self.engine.handle_new_player(event)

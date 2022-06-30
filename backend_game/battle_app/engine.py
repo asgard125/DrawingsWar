@@ -37,7 +37,7 @@ class Unit:
                      'max_attack_range': self.max_attack_range,
                      'battle_class': self.battle_class,
                      'name': self.name,
-                     'owner_id': self.owner_id
+                     'player_id': self.player_id
                     }
                 }
 
@@ -98,6 +98,8 @@ class Board:
 
         self.board[s_y][s_x].x = m_x
         self.board[s_y][s_x].y = m_y
+        self.board[m_y][m_x] = self.board[s_y][s_x]
+        self.board[s_y][s_x] = None
         return True
 
     def render(self):
@@ -133,6 +135,9 @@ class GameEngine(threading.Thread):
         new_player = Player(game_name=data['game_name'], player_id=data['player_id'], rating=data['rating'], turn=self.players_in_group)
         self.players_in_group += 1
         self.players.append(new_player)
+        room = BattleSession.objects.get(room_code=self.room_code)
+        room.players_count += 1
+        room.save()
         layer = 0
         if self.players_in_group == 1:
             border_pos = 0
@@ -149,15 +154,13 @@ class GameEngine(threading.Thread):
             layer += 1
 
     def handle_player_event(self, event):
+        print(self.room_code)
         player_id = int(event['data']['player_id'])
         event_type = event['data']['type']
         selected_x = int(event['data']['selected']['x'])
         selected_y = int(event['data']['selected']['y'])
         move_x = int(event['data']['move']['x'])
         move_y = int(event['data']['move']['y'])
-        room = BattleSession.objects.get(room_code=self.room_code)
-        room.players_count += 1
-        room.save()
         if event_type == 'move' and self.players[self.player_turn].player_id == player_id:
             if self.board.player_attack_on(player_id=player_id, s_x=selected_x, s_y=selected_y, m_x=move_x, m_y=move_y):
                 self.timer = 0
@@ -182,7 +185,6 @@ class GameEngine(threading.Thread):
             time.sleep(self.tick_rate)
 
     def send_game_state(self):
-        print(self.player_turn)
         state_json = {"type": "game.update", 'game': {
                         "state": self.game_state, "timer": self.timer + 1,
                         "board": self.board.render(), "player_id_turn": self.players[self.player_turn].player_id}}
