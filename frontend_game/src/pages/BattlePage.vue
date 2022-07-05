@@ -10,11 +10,6 @@
 </template>
 
 
-
-
-
-
-
 <script>
 const fabric = require("fabric").fabric;
 import 'fabric';
