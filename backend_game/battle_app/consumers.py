@@ -1,4 +1,5 @@
 import json
+import random
 
 from asgiref.sync import async_to_sync, sync_to_async
 from channels.consumer import SyncConsumer
@@ -66,7 +67,7 @@ class PlayerConsumer(AsyncWebsocketConsumer):
 class EngineConsumer(SyncConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.group_name = "base_group_name"
+        self.group_name = ''.join([random.choice('qwertyyuiopasdfghjklzxcvbnm') for x in range(12)])
         self.engine = GameEngine(self.group_name)
         self.engine.start()
 

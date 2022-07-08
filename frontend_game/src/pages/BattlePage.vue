@@ -141,34 +141,33 @@ import 'fabric';
                         }else{
                           this.board[y][x].selected_status = false
                         }
-                        console.log( this.board[y][x].selected_status)
                         this.self_units.push(this.board[y][x])
 
                         if (this.board[y][x].unit.battle_class === 'tank'){
-                          url = require('../assets/tank.jpg')
-                          console.log(1)
+                          url = require('../assets/tank.jpg')``
+
                         }
                         else if (this.board[y][x].unit.battle_class === 'damager'){
                           url = require('../assets/damager.jpg')
-                          console.log(1)
+
                         }
                         else if (this.board[y][x].unit.battle_class === 'ranger'){
                           url = require('../assets/ranger.jpg')
-                          console.log(1)
+
                         }
                       }else{
                         this.enemy_units.push(this.board[y][x])
                         if (this.board[y][x].unit.battle_class === 'tank'){
                           url = require('../assets/tank_bw.jpg')
-                          console.log(1)
+
                         }
                         else if (this.board[y][x].unit.battle_class === 'damager'){
                           url = require('../assets/damager_bw.jpg')
-                          console.log(1)
+
                         }
                         else if (this.board[y][x].unit.battle_class === 'ranger'){
                           url = require('../assets/ranger_bw.jpg')
-                          console.log(1)
+
                         }
                       }
                       let parent = this
@@ -197,7 +196,6 @@ import 'fabric';
                   }
                 }
                 if (this.unit_selected && this.board[this.selected_cellY][this.selected_cellX] !== null){
-                  console.log(this.board[this.selected_cellY][this.selected_cellX].unit.max_attack_range)
                         this.canvas.add(new fabric.Rect({
                           left: (this.selected_cellX - this.board[this.selected_cellY][this.selected_cellX].unit.max_attack_range)
                               * this.field_render_multiplier,
