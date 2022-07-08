@@ -237,9 +237,9 @@ class GameEngine(threading.Thread):
                 if self.groups[group].game_state == 'started':
 
                     self.groups[group].send_game_state()
-                    self.groups[group].timer = (self.timer + self.tick_rate) % self.move_time
+                    self.groups[group].timer = (self.groups[group].timer + self.tick_rate) % self.groups[group].move_time
                     if self.groups[group].timer == 0:
-                        self.groups[group].player_turn = (self.player_turn + 1) % self.player_count
+                        self.groups[group].player_turn = (self.groups[group].player_turn + 1) % self.groups[group].player_count
                 else:
                     async_to_sync(self.channel_layer.group_send)(
                         group, {"type": "game.update", 'game': {"state": self.groups[group].game_state,
