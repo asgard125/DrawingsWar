@@ -52,7 +52,6 @@ export default {
     axios
         .get(axios.defaults.baseURL + "api/v1/battleunit")
         .then((response) => {
-          console.log(response.data)
           this.all_chars = response.data;
         })
   },
@@ -62,9 +61,7 @@ export default {
           .post(axios.defaults.baseURL + "api/v1/playerbattleunit/", {
             id: id
           })
-          .then((response) => {
-            console.log(response.data)
-          })
+
     }
   }
 }

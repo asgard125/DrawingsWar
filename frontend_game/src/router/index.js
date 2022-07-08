@@ -5,8 +5,14 @@ import InventoryPage from "@/pages/InventoryPage";
 import ShopPage from "@/pages/ShopPage";
 import BattlePage from "@/pages/BattlePage";
 import SignUpPage from "@/pages/SignUpPage";
+import WelcomePage from "@/pages/WelcomePage";
 
 const routes = [
+  {
+    path: '/',
+    name: 'welcome',
+    component: WelcomePage
+  },
   {
     path: '/home',
     name: 'home',
