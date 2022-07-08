@@ -8,7 +8,7 @@
         <div class="col"> Цена: {{ char.base_unit.shop_price }}</div>
         <div class="col">
           <button @click="set_in_deck(char.id)" id="fight_btn" class="btn btn-primary bg-black" type="button">
-            Button
+            Добавить в колоду
           </button>
         </div>
       </div>
@@ -41,5 +41,8 @@ export default {
 </script>
 
 <style scoped>
-
+.charitem{
+  margin: 15px;
+  text-align: center;
+}
 </style>
