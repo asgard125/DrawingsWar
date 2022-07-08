@@ -4,18 +4,21 @@
 
     <main class="form-signin w-100 m-auto">
       <form @submit.prevent>
-        <h1 class="h3 mb-3 fw-normal">Входите на здоровье или <router-link to="signup">регистрируемся</router-link></h1>
+        <h1 class="h3 mb-3 fw-normal">Регистрируемся, не стесняемся или <router-link to="login">входим</router-link></h1>
         <div class="form-floating">
-          <input v-model="username" type="text" class="form-control" id="floatingInput" placeholder="Никнейм">
-          <label  for="floatingInput">Никнейм</label>
+          <input v-model="username" type="text" class="form-control" id="floatingUsername" placeholder="Никнейм">
+          <label  for="floatingUsername">Никнейм</label>
+        </div>
+        <div class="form-floating">
+          <input v-model="game_name" type="text" class="form-control" id="floatingGamename" placeholder="Игровое имя">
+          <label for="floatingGamename">Игровое имя</label>
         </div>
         <div class="form-floating">
           <input v-model="password" type="password" class="form-control" id="floatingPassword" placeholder="Пароль">
           <label for="floatingPassword">Пароль</label>
         </div>
 
-
-        <button @click="login" class="w-100 btn btn-lg btn-primary" type="submit">Войти в ит</button>
+        <button @click="signup" class="w-100 btn btn-lg btn-primary" type="submit">Зарегаться</button>
         <p class="mt-5 mb-3 text-muted">© 2017–2022</p>
       </form>
     </main>
@@ -27,26 +30,24 @@
 import axios from "axios";
 
 export default {
-  name: "LoginPage",
+  name: "SignUpPage",
   data() {
     return {
       username: "",
       password: "",
+      game_name: ""
     }
   },
   methods: {
-    login() {
+    signup() {
       axios
-          .post(axios.defaults.baseURL + "auth/token/login", {
+          .post(axios.defaults.baseURL + "auth/users/", {
             username: this.username,
-            password: this.password
+            password: this.password,
+            game_name: this.game_name
           })
           .then((response) => {
-            console.log(response.data);
-            const token = response.data.auth_token;
-            axios.defaults.headers.common['Authorization'] = 'Token ' + token;
-            localStorage.setItem('token', token);
-            this.$router.push("home");
+            this.$router.push("login");
           })
 
     }

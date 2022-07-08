@@ -32,9 +32,14 @@ export default createStore({
         removeToken(state) {
             state.token = ''
             state.isAuthenticated = false
+            localStorage.removeItem("token");
         },
         setUserId(state){
             state.user_id = localStorage.getItem("user_id");
+        },
+        removeUserId(state){
+            state.user_id = '';
+            localStorage.removeItem("user_id");
         },
     }
 }

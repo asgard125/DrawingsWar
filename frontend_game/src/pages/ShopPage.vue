@@ -54,7 +54,7 @@ export default {
   methods: {
     market_purchase(id){
       axios
-          .put(axios.defaults.baseURL + "/api/v1/playerbattleunit/market_purchase")
+          .put(axios.defaults.baseURL + "api/v1/playerbattleunit/market_purchase")
           .then((response) => {
             console.log(response.data)
           })
@@ -64,5 +64,7 @@ export default {
 </script>
 
 <style scoped>
-
+.charitem{
+  margin: 15px;
+}
 </style>
