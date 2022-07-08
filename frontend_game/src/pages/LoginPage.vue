@@ -4,18 +4,18 @@
 
     <main class="form-signin w-100 m-auto">
       <form @submit.prevent>
-        <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+        <h1 class="h3 mb-3 fw-normal">Входите на здоровье или <router-link to="signup">регистрируемся</router-link></h1>
         <div class="form-floating">
-          <input v-model="username" type="text" class="form-control" id="floatingInput" placeholder="Username">
-          <label  for="floatingInput">Username</label>
+          <input v-model="username" type="text" class="form-control" id="floatingInput" placeholder="Никнейм">
+          <label  for="floatingInput">Никнейм</label>
         </div>
         <div class="form-floating">
-          <input v-model="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
-          <label for="floatingPassword">Password</label>
+          <input v-model="password" type="password" class="form-control" id="floatingPassword" placeholder="Пароль">
+          <label for="floatingPassword">Пароль</label>
         </div>
 
 
-        <button @click="login" class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
+        <button @click="login" class="w-100 btn btn-lg btn-primary" type="submit">Войти в ит</button>
         <p class="mt-5 mb-3 text-muted">© 2017–2022</p>
       </form>
     </main>

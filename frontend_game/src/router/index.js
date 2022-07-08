@@ -4,6 +4,7 @@ import LoginPage from "@/pages/LoginPage";
 import InventoryPage from "@/pages/InventoryPage";
 import ShopPage from "@/pages/ShopPage";
 import BattlePage from "@/pages/BattlePage";
+import SignUpPage from "@/pages/SignUpPage";
 
 const routes = [
   {
@@ -15,6 +16,11 @@ const routes = [
     path: '/login',
     name: 'login',
     component: LoginPage
+  },
+  {
+    path: '/signup',
+    name: 'signup',
+    component: SignUpPage
   },
   {
     path: '/inventory',

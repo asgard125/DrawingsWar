@@ -17,6 +17,7 @@
           <div class="col p-2 bg-gradient">Уровень: {{ info_header.level }}</div>
           <div class="col p-2 bg-gradient">Никнейм: {{ info_header.game_name }}</div>
           <div class="col p-2 bg-gradient">Денежки: {{ info_header.money }}</div>
+          <div class="col p-2 bg-gradient"><button @click="logout" id="fight_btn" class="btn btn-primary bg-white text-black" type="button">Выйти</button></div>
         </div>
       </div>
     </div>
@@ -30,6 +31,13 @@ export default {
     info_header: {
       type: Object,
       required: true,
+    }
+  },
+  methods: {
+    logout(){
+      this.$store.commit("removeToken")
+      this.$store.commit("removeUserId")
+      this.$router.push("login")
     }
   }
 }
