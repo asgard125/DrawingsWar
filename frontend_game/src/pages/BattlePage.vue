@@ -83,9 +83,9 @@ import 'fabric';
         },
         methods: {
             connect() {
-                //this.self_user_id = Number(this.$store.getters.USER_ID)
+                this.self_user_id = Number(this.$store.getters.USER_ID)
                 this.chatSocket = new WebSocket(
-                    'ws:' + '127.0.0.1:8000/ws/battle/' + this.$route.params.id + '/?' + '7c0611170a9ab069554c674ad3a539a68f302e2e');
+                    'ws:' + '127.0.0.1:8000/ws/battle/' + this.$route.params.id + '/?' + this.$store.getters.TOKEN);
                 this.chatSocket.onopen = () => {
                     this.socket_status = "connected";
                     this.chatSocket.onmessage = ({data}) => {
