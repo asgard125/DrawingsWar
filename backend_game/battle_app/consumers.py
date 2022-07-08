@@ -68,14 +68,10 @@ class EngineConsumer(SyncConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.group_name = ''.join([random.choice('qwertyyuiopasdfghjklzxcvbnm') for x in range(12)])
-        self.engine = GameEngine(self.group_name)
+        self.engine = GameEngine()
         self.engine.start()
 
     def player_new(self, event):
-        self.group_name = event['group_name']
-        self.engine.room_code = event['room_code']
-        self.engine.group_name = self.group_name
-        print("Player Joined: %s", event["game_name"])
         self.engine.handle_new_player(event)
 
     def player_event(self, event):
