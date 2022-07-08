@@ -10,6 +10,9 @@
           <button @click="set_in_deck(char.id)" id="fight_btn" class="btn btn-primary bg-black" type="button">
             Добавить в колоду
           </button>
+          <button @click="set_on_market(char.id, char.base_unit.shop_price)" id="fight_btn" class="btn btn-primary bg-black" type="button">
+            Добавить на торговую
+          </button>
         </div>
       </div>
     </div>
@@ -34,6 +37,13 @@ export default {
           })
       //this.$emit('add', id)
     },
+    set_on_market(id, price){
+      axios
+          .put(axios.defaults.baseURL + "api/v1/playerbattleunit/" + id + "/", {
+            action: "set_on_market",
+            market_price: price,
+          })
+    }
 
 
   }

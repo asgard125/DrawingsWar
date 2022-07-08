@@ -6,6 +6,7 @@ import ShopPage from "@/pages/ShopPage";
 import BattlePage from "@/pages/BattlePage";
 import SignUpPage from "@/pages/SignUpPage";
 import WelcomePage from "@/pages/WelcomePage";
+import TradingPage from "@/pages/TradingPage";
 
 const routes = [
   {
@@ -42,7 +43,13 @@ const routes = [
     path: '/battle/:id',
     name: 'battle',
     component: BattlePage
-  }
+  },
+  {
+    path: '/trading',
+    name: 'trading',
+    component: TradingPage
+  },
+
 ]
 
 const router = createRouter({
