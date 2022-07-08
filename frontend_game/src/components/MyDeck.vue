@@ -10,7 +10,7 @@
     </div>
   </div>
   <div class="row d-flex col-6 mx-auto ">
-    <button v-if="btn_visible" @click="this.$router.push('/')" id="fight_btn" class="btn btn-primary bg-black" type="button">Сохранить колоду и в бой</button>
+    <button v-if="btn_visible" @click="this.$router.push('home')" id="fight_btn" class="btn btn-primary bg-black" type="button">Сохранить колоду и в бой</button>
   </div>
 </template>
 
