@@ -1,5 +1,6 @@
 <template>
   <info-header :info_header="info_header"></info-header>
+
 </template>
 
 <script>

@@ -1,7 +1,9 @@
 <template>
   <info-header :info_header="info_header"></info-header>
+
   <div class="row d-flex col-6 mx-auto ">
-    <button @click="getRoom" id="fight_btn" class="btn btn-primary bg-black" type="button">Button</button>
+    <my-deck :deck_chars="deck_chars" :btn_visible="false"></my-deck>
+    <button @click="enterRoom" id="fight_btn" class="btn btn-primary bg-black" type="button">Button</button>
   </div>
 
 </template>
@@ -9,10 +11,12 @@
 <script>
 import axios from 'axios';
 import InfoHeader from "@/components/InfoHeader";
+import AllChars from "@/components/AllChars";
+import MyDeck from "@/components/MyDeck";
 
 export default {
   name: "HomePage",
-  components: {InfoHeader},
+  components: {MyDeck, AllChars, InfoHeader},
   data() {
     return {
       info_header:{
@@ -20,7 +24,8 @@ export default {
         level_score: 0,
         level: 0,
         money: 0,
-      }
+      },
+      deck_chars: [],
     }
   },
   mounted() {
@@ -32,14 +37,22 @@ export default {
           this.info_header.level_score = response.data.user.level_score;
           this.info_header.level = this.info_header.level_score / 100;
         })
+    axios
+        .get(axios.defaults.baseURL + "api/v1/playerbattleunit")
+        .then((response) => {
+          console.log(response.data)
+          const all_chars = response.data
+          this.deck_chars = all_chars.filter(char => char.in_deck === true)
+        })
 
   },
   methods: {
-    getRoom() {
+    enterRoom() {
       axios
           .get(axios.defaults.baseURL + "api/v1/battlesession/get_available_room")
           .then((response) => {
-            console.log(response.data)
+            const room_id = response.data.room_code
+            this.$router.push("/battle/" +  room_id )
           })
     },
   }
@@ -50,7 +63,7 @@ export default {
 <style scoped>
 #fight_btn {
   font-size: 60px;
-  margin: 0 0;
+  margin-top: 15px;
   height: 250px;
 }
 </style>

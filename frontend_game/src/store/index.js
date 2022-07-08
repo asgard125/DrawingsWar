@@ -5,25 +5,24 @@ export default createStore({
         token: '',
         isAuthenticated: false
     },
-    mutations:{
-        initializeStore(state){
-            if( localStorage.getItem('token')){
+    mutations: {
+        initializeStore(state) {
+            if (localStorage.getItem('token')) {
                 state.token = localStorage.getItem('token')
                 state.isAuthenticated = true
-            }
-            else{
+            } else {
                 state.token = ''
                 state.isAuthenticated = false
             }
         },
-        setToken(state, token){
+        setToken(state, token) {
             state.token = token
             state.isAuthenticated = true
         },
-        removeToken(state){
+        removeToken(state) {
             state.token = ''
             state.isAuthenticated = false
-        }
+        },
     }
-    }
+}
 )

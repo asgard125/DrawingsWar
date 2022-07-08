@@ -5,7 +5,7 @@
       <all-chars :all_chars="all_chars"></all-chars>
     </div>
     <div class="col-6">
-      <my-deck :deck_chars="deck_chars"></my-deck>
+      <my-deck :deck_chars="deck_chars" :btn_visible="true"></my-deck>
     </div>
   </div>
 </template>

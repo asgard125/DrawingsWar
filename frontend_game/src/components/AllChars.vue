@@ -32,8 +32,9 @@ export default {
           .put(axios.defaults.baseURL + "api/v1/playerbattleunit/" + id + "/", {
             action: "set_in_deck",
           })
-      this.$emit('add', id)
+      //this.$emit('add', id)
     },
+
 
   }
 }
