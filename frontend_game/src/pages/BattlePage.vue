@@ -1,22 +1,35 @@
 <template>
-  <div>
-    <div>
-      <h1>Battle</h1>
-      <h5>game state {{game_state}}</h5>
-      <h5>timer {{timer}}</h5>
-      <h5>winner {{winner}}</h5>
-      <h5>player id turn {{player_id_turn}}</h5>
+  <div class="row col-10 mx-auto my-5" id="battleinfo">
+    <div class="col" id="blue">
+      <h1>Red player</h1>
+      <div v-for="unit in red_units" :key="unit.id">
+        <div class="row">
+          <div class="col">{{ unit.name }}</div>
+          <div class="col">{{ unit.class }}</div>
+          <div class="col">{{ unit.hp }}</div>
+        </div>
+      </div>
     </div>
-    <div align="center">
+    <div class="col-6" id="gamestat">
+      <h1>Red/blue Move</h1>
+      <h5>timer {{timer}}</h5>
+      <h5>game state {{game_state}}</h5>
+    </div>
+    <div class="col" id="red">
+      <h1>Blue player</h1>
+      <div v-for="unit in blue_units" :key="unit.id">
+        <div class="row">
+          <div class="col">{{ unit.name }}</div>
+          <div class="col">{{ unit.class }}</div>
+          <div class="col">{{ unit.hp }}</div>
+        </div>
+      </div>
+    </div>
+    <div align="center" id="container_battle">
       <canvas id="battle_field" class="canvas" :width=field_x_cells*field_render_multiplier :height=field_y_cells*field_render_multiplier />
     </div>
   </div>
 </template>
-
-
-
-
-
 
 
 <script>
@@ -191,5 +204,17 @@ import 'fabric';
 </script>
 
 <style scoped>
-
+#gamestat{
+  text-align: center;
+}
+#red{
+  text-align: end;
+}
+#battleinfo{
+  margin-top: 15px;
+  margin-bottom: 10px;
+}
+#container_battle{
+  margin-top: 40px;
+}
 </style>
