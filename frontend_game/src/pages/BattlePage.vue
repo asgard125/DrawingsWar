@@ -1,17 +1,37 @@
 <template>
-  <div>
-    <div>
-      <h1>Battle</h1>
-      <h5>game state {{game_state}}</h5>
-      <h5>timer {{timer}}</h5>
-      <h5>winner {{winner}}</h5>
-      <h5>player id turn {{player_id_turn}}</h5>
+  <div class="row col-10 mx-auto my-5" id="battleinfo">
+    <div class="col" id="blue">
+      <h1>Вы</h1>
+      <div v-for="unit in self_units">
+        <div class="row">
+          <div v-if="unit.selected_status">
+            <div class="col" style="font-size: 1.2em; background-color: rgba(255, 0, 0, 0.4)">Название: {{ unit.unit.name }}, Класс: {{ unit.unit.battle_class }}, ХП: {{ unit.unit.health_points }}</div>
+          </div>
+          <div v-else>
+            <div class="col" style="font-size: 1.2em;">Название: {{ unit.unit.name }}, Класс: {{ unit.unit.battle_class }}, ХП: {{ unit.unit.health_points }}</div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div align="center">
+    <div class="col-6" id="gamestat">
+      <h1>{{ text_status }}</h1>
+      <h2>{{ text_turn }}</h2>
+      <h5>timer {{timer}}</h5>
+    </div>
+    <div class="col" id="red">
+      <h1>Соперник</h1>
+      <div v-for="unit in enemy_units">
+        <div class="row">
+          <div class="col" style="font-size: 1.2em;">Название: {{ unit.unit.name }}, Класс: {{ unit.unit.battle_class }}, ХП: {{ unit.unit.health_points }}</div>
+        </div>
+      </div>
+    </div>
+    <div align="center" id="container_battle">
       <canvas id="battle_field" class="canvas" :width=field_x_cells*field_render_multiplier :height=field_y_cells*field_render_multiplier />
     </div>
   </div>
 </template>
+
 
 
 
@@ -35,6 +55,7 @@ import 'fabric';
                 text_status: 'Ожидание игроков...',
                 game_state: '',
                 player_id_turn: -1,
+                text_turn: '',
                 unit_selected: false,
                 selected_id: -1,
                 selected_cellX: -1,
@@ -47,7 +68,9 @@ import 'fabric';
                 timer: 0,
                 self_user_id: 1,
                 winner: '',
-                board: [[]]
+                board: [[]],
+                self_units: [],
+                enemy_units: [],
             }
         },
         mounted() {
@@ -67,13 +90,23 @@ import 'fabric';
                     this.socket_status = "connected";
                     this.chatSocket.onmessage = ({data}) => {
                         let parsed_data = JSON.parse(data)
+                        this.enemy_units = []
+                        this.self_units = []
                         this.game_state = parsed_data.state
                         if (parsed_data.state === 'started') {
+                          this.text_status = 'Идет игра'
                           this.board = parsed_data.board
+
                           this.player_id_turn = parsed_data.player_id_turn
+                          if (this.player_id_turn === this.self_user_id){
+                            this.text_turn = 'Ваш ход';
+                          }else{
+                            this.text_turn = 'Ход противника';
+                          }
                           this.timer = parsed_data.timer
                         }else if (parsed_data.state === 'over'){
                           this.winner = parsed_data.winner
+                          this.text_status = 'Игра окончена'
                         }
                         this.render_field();
                     };
@@ -99,35 +132,81 @@ import 'fabric';
                 for (let y = 0; y < this.board.length; y++){
                   for (let x = 0; x < this.board.length; x++){
                     if (this.board[y][x] !== null) {
-                      this.canvas.add(new fabric.Triangle({
-                        left: this.board[y][x].unit.x * this.field_render_multiplier,
-                        top: this.board[y][x].unit.y * this.field_render_multiplier,
-                        height: this.field_render_multiplier,
-                        width: this.field_render_multiplier,
-                        fill: '#000000',
-                        evented: false,
-                        selectable: false,
-                        game_object_type: 'unit',
-                        attack_points: this.board[y][x].unit.attack_points,
-                        battle_class: this.board[y][x].unit.battle_class,
-                        health_points: this.board[y][x].unit.health_points,
-                        max_attack_range: this.board[y][x].unit.max_attack_range,
-                        max_move_range: this.board[y][x].unit.max_move_range,
-                        name: this.board[y][x].unit.name,
-                        player_id: this.board[y][x].unit.player_id,
-                        shield_level: this.board[y][x].unit.shield_level,
-                      }));
-                    }else{
+                      let url;
+                      if (this.board[y][x].unit.player_id === this.self_user_id){
+
+                        //отметка, что юнит выбран в данный момент
+                        if (this.unit_selected && this.selected_cellX === x  && this.selected_cellY === y){
+                          this.board[y][x].selected_status = true
+                        }else{
+                          this.board[y][x].selected_status = false
+                        }
+                        console.log( this.board[y][x].selected_status)
+                        this.self_units.push(this.board[y][x])
+
+                        if (this.board[y][x].unit.battle_class === 'tank'){
+                          url = require('../assets/tank.jpg')
+                          console.log(1)
+                        }
+                        else if (this.board[y][x].unit.battle_class === 'damager'){
+                          url = require('../assets/damager.jpg')
+                          console.log(1)
+                        }
+                        else if (this.board[y][x].unit.battle_class === 'ranger'){
+                          url = require('../assets/ranger.jpg')
+                          console.log(1)
+                        }
+                      }else{
+                        this.enemy_units.push(this.board[y][x])
+                        if (this.board[y][x].unit.battle_class === 'tank'){
+                          url = require('../assets/tank_bw.jpg')
+                          console.log(1)
+                        }
+                        else if (this.board[y][x].unit.battle_class === 'damager'){
+                          url = require('../assets/damager_bw.jpg')
+                          console.log(1)
+                        }
+                        else if (this.board[y][x].unit.battle_class === 'ranger'){
+                          url = require('../assets/ranger_bw.jpg')
+                          console.log(1)
+                        }
+                      }
+                      let parent = this
+                      fabric.Image.fromURL(url, function(myImg) {
+                          myImg.set({
+                            left: parent.board[y][x].unit.x * parent.field_render_multiplier,
+                            top: parent.board[y][x].unit.y * parent.field_render_multiplier,
+                            height: parent.field_render_multiplier,
+                            width: parent.field_render_multiplier,
+                            fill: '#000000',
+                            evented: false,
+                            selectable: false,
+                            game_object_type: 'unit',
+                            attack_points: parent.board[y][x].unit.attack_points,
+                            battle_class: parent.board[y][x].unit.battle_class,
+                            health_points: parent.board[y][x].unit.health_points,
+                            max_attack_range: parent.board[y][x].unit.max_attack_range,
+                            max_move_range: parent.board[y][x].unit.max_move_range,
+                            name: parent.board[y][x].unit.name,
+                            player_id: parent.board[y][x].unit.player_id,
+                            shield_level: parent.board[y][x].unit.shield_level,
+                          });
+                          parent.canvas.add(myImg);
+                      });
                     }
                   }
                 }
                 if (this.unit_selected && this.board[this.selected_cellY][this.selected_cellX] !== null){
                   console.log(this.board[this.selected_cellY][this.selected_cellX].unit.max_attack_range)
                         this.canvas.add(new fabric.Rect({
-                          left: (2 - this.board[this.selected_cellY][this.selected_cellX].unit.max_attack_range) * this.field_render_multiplier,
-                          top: (2 - this.board[this.selected_cellY][this.selected_cellX].unit.max_attack_range) * this.field_render_multiplier,
-                          height: (1 + 2 + 2 * this.board[this.selected_cellY][this.selected_cellX].unit.max_attack_range) * this.field_render_multiplier,
-                          width: (1 + 2 + 2 * this.board[this.selected_cellY][this.selected_cellX].unit.max_attack_range) * this.field_render_multiplier,
+                          left: (this.selected_cellX - this.board[this.selected_cellY][this.selected_cellX].unit.max_attack_range)
+                              * this.field_render_multiplier,
+                          top: (this.selected_cellY - this.board[this.selected_cellY][this.selected_cellX].unit.max_attack_range)
+                              * this.field_render_multiplier,
+                          height: (2 * this.board[this.selected_cellY][this.selected_cellX].unit.max_attack_range)
+                              * this.field_render_multiplier + this.field_render_multiplier,
+                          width: (2 * this.board[this.selected_cellY][this.selected_cellX].unit.max_attack_range)
+                              * this.field_render_multiplier + this.field_render_multiplier,
                           fill: 'rgba(255, 0, 0, 0.4)',
                           evented: false,
                           selectable: false,
@@ -158,7 +237,6 @@ import 'fabric';
                     }
                   }
                 }
-             // return 'no way'
               return {status: 'ok'}
             },
             PlayerMoveHandler(e){
@@ -174,10 +252,10 @@ import 'fabric';
                     this.selected_cellX = objects[check_res.index].left / this.field_render_multiplier
                     this.selected_cellY = objects[check_res.index].top / this.field_render_multiplier
                 }else {
-                  console.log('send...')
-                  this.sendMove(cellX, cellY)
-                  console.log('send complete...')
-                  this.unit_selected = false
+                  if (this.player_id_turn === this.self_user_id) {
+                    this.sendMove(cellX, cellY)
+                    this.unit_selected = false
+                  }
                 }
               }else {
                 for (let i = 0; i < objects.length; i++) {
@@ -197,6 +275,19 @@ import 'fabric';
     }
 </script>
 
-<style scoped>
 
+<style scoped>
+#gamestat{
+  text-align: center;
+}
+#red{
+  text-align: end;
+}
+#battleinfo{
+  margin-top: 15px;
+  margin-bottom: 10px;
+}
+#container_battle{
+  margin-top: 40px;
+}
 </style>
