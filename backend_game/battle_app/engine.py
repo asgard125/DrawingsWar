@@ -198,8 +198,6 @@ class GameGroup:
             looser_history = BattleHistory(result='loose', user=looser_user, enemy_game_name=winner_user.game_name)
             winner_history.save()
             looser_history.save()
-            room = BattleSession.objects.get(room_code=self.room_code)
-            room.delete()
         elif player2_units_on_board == 0:
             self.game_state = 'over'
             self.winner['player_id'] = self.players[0].player_id
@@ -212,8 +210,6 @@ class GameGroup:
             looser_history = BattleHistory(result='loose', user=looser_user, enemy_game_name=winner_user.game_name)
             winner_history.save()
             looser_history.save()
-            room = BattleSession.objects.get(room_code=self.room_code)
-            room.delete()
 
 
 class GameEngine(threading.Thread):
@@ -232,7 +228,8 @@ class GameEngine(threading.Thread):
     def run(self) -> None:
         print('game engine started')
         while True:
-            for group in self.groups.keys():
+            k = list(self.groups.keys()).copy()
+            for group in k:
                 if self.groups[group].game_state == 'started':
 
                     self.groups[group].send_game_state()

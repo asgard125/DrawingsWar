@@ -66,7 +66,7 @@ import 'fabric';
                 field_x_cells: 10,
                 field_render_multiplier: 100,
                 timer: 0,
-                self_user_id: 1,
+                self_user_id: -1,
                 winner: '',
                 board: [[]],
                 self_units: [],
@@ -89,14 +89,13 @@ import 'fabric';
                 this.chatSocket.onopen = () => {
                     this.socket_status = "connected";
                     this.chatSocket.onmessage = ({data}) => {
-                        let parsed_data = JSON.parse(data)
-                        this.enemy_units = []
-                        this.self_units = []
-                        this.game_state = parsed_data.state
+                        let parsed_data = JSON.parse(data);
+                        this.enemy_units = [];
+                        this.self_units = [];
+                        this.game_state = parsed_data.state;
                         if (parsed_data.state === 'started') {
                           this.text_status = 'Идет игра'
-                          this.board = parsed_data.board
-
+                          this.board = parsed_data.board;
                           this.player_id_turn = parsed_data.player_id_turn
                           if (this.player_id_turn === this.self_user_id){
                             this.text_turn = 'Ваш ход';
@@ -129,12 +128,12 @@ import 'fabric';
                 }
               }
               if (this.game_state === 'started'){
-                for (let y = 0; y < this.board.length; y++){
-                  for (let x = 0; x < this.board.length; x++){
+                for (let y = 0; y < this.field_y_cells; y++){
+                  for (let x = 0; x < this.field_x_cells; x++){
                     if (this.board[y][x] !== null) {
                       let url;
+                      console.log(y, x, this.board[y][x].unit.player_id)
                       if (this.board[y][x].unit.player_id === this.self_user_id){
-
                         //отметка, что юнит выбран в данный момент
                         if (this.unit_selected && this.selected_cellX === x  && this.selected_cellY === y){
                           this.board[y][x].selected_status = true
@@ -144,7 +143,7 @@ import 'fabric';
                         this.self_units.push(this.board[y][x])
 
                         if (this.board[y][x].unit.battle_class === 'tank'){
-                          url = require('../assets/tank.jpg')``
+                          url = require('../assets/tank.jpg')
 
                         }
                         else if (this.board[y][x].unit.battle_class === 'damager'){
@@ -173,8 +172,8 @@ import 'fabric';
                       let parent = this
                       fabric.Image.fromURL(url, function(myImg) {
                           myImg.set({
-                            left: (parent.board[y][x].unit.x) * parent.field_render_multiplier,
-                            top: (parent.board[y][x].unit.y) * parent.field_render_multiplier,
+                            left: parent.board[y][x].unit.x * parent.field_render_multiplier,
+                            top: parent.board[y][x].unit.y * parent.field_render_multiplier,
                             height: parent.field_render_multiplier,
                             width: parent.field_render_multiplier,
                             fill: '#000000',

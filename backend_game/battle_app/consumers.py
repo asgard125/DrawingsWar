@@ -18,7 +18,7 @@ def _get_user_deck(user=None):
 
 def _is_room_exist_and_available(room_code=None, user=None):
     rooms = BattleSession.objects.filter(room_code=room_code)
-    rooms = [obj for obj in rooms if (obj.players_count < 2 and obj.creator != user)]
+    rooms = [obj for obj in rooms if obj.players_count < 2]
     return len(rooms) > 0
 
 
@@ -31,7 +31,7 @@ class PlayerConsumer(AsyncWebsocketConsumer):
             self.user_deck = await sync_to_async(_get_user_deck, thread_sensitive=True)(user=self.scope['user'])
             self.user_game_name = self.scope['user'].game_name
             self.user_rating = self.scope['user'].rating
-            self.user_id = int(self.scope['user'].id)
+            self.user_id = int(self.scope['user'].pk)
 
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
             await self.accept()
