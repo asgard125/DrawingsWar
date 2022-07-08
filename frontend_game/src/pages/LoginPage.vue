@@ -1,5 +1,5 @@
 <template>
-  <div class="col-6">
+  <div class="col-6 m-auto">
     <body class="text-center">
 
     <main class="form-signin w-100 m-auto">
