@@ -36,6 +36,10 @@ export default {
           this.info_header.money = response.data.user.money;
           this.info_header.level_score = response.data.user.level_score;
           this.info_header.level = this.info_header.level_score / 100;
+          const user_id = response.data.user.id
+          localStorage.setItem('user_id', user_id);
+          this.$store.commit("setUserId")
+          console.log(this.$store.getters.TOKEN)
         })
     axios
         .get(axios.defaults.baseURL + "api/v1/playerbattleunit")
@@ -47,12 +51,16 @@ export default {
 
   },
   methods: {
-    enterRoom() {
+    enterRoom: function () {
       axios
           .get(axios.defaults.baseURL + "api/v1/battlesession/get_available_room")
           .then((response) => {
             const room_id = response.data.room_code
-            this.$router.push("/battle/" +  room_id )
+            this.$router.push({
+              name: 'battle',
+              params: {id: room_id}
+            })
+            console.log(response.data.room_code)
           })
     },
   }

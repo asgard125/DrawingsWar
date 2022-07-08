@@ -44,6 +44,8 @@ export default {
             const token = response.data.auth_token;
             axios.defaults.headers.common['Authorization'] = 'Token ' + token;
             localStorage.setItem('token', token);
+
+
             this.$router.push("/");
           })
     }

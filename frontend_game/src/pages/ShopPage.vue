@@ -1,6 +1,20 @@
 <template>
   <info-header :info_header="info_header"></info-header>
-
+  <div class="charlist" v-for="char in all_chars" :key="char.id">
+    <div class="charitem">
+      <div class="row">
+        <div class="col"><img :src="require(`../assets/${char.base_unit.name.toLowerCase()}.jpg`)"
+                              alt="Картиночка пропала("></div>
+        <div class="col"> Имя персонажа: {{ char.base_unit.name }}</div>
+        <div class="col"> Цена: {{ char.base_unit.shop_price }}</div>
+        <div class="col">
+          <button @click="market_purchase(char.id)" id="fight_btn" class="btn btn-primary bg-black" type="button">
+            Купить
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -17,7 +31,8 @@ export default {
         level_score: 0,
         level: 0,
         money: 0,
-      }
+      },
+      all_chars: [],
     }
   },
   mounted() {
@@ -29,8 +44,22 @@ export default {
           this.info_header.level_score = response.data.user.level_score;
           this.info_header.level = this.info_header.level_score / 100;
         })
-
+    axios
+        .get(axios.defaults.baseURL + "api/v1/playerbattleunit")
+        .then((response) => {
+          console.log(response.data)
+          this.all_chars = response.data;
+        })
   },
+  methods: {
+    market_purchase(id){
+      axios
+          .put(axios.defaults.baseURL + "/api/v1/playerbattleunit/market_purchase")
+          .then((response) => {
+            console.log(response.data)
+          })
+    }
+  }
 }
 </script>
 
