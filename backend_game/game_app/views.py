@@ -37,10 +37,7 @@ class PlayerBattleUnitAPIView(GenericViewSet):
 
     def create(self, request):
         if 'id' in request.data:
-            if request.data['id'].isdigit():
-                base_unit = get_object_or_404(BattleUnit, pk=int(request.data['id']))
-            else:
-                return Response({'status': 'fail', 'details': 'wrong base unit id'})
+            base_unit = get_object_or_404(BattleUnit, pk=int(request.data['id']))
         else:
             return Response({'status': 'fail', 'details': 'wrong base unit id'})
 
