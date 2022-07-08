@@ -116,11 +116,11 @@ class GameGroup:
     x_dim = 10
     y_dim = 5
 
-    def __init__(self, group_name, **kwargs):
+    def __init__(self, group_name, room_code, **kwargs):
         self.timer = 0
         self.player_turn = 0
         self.group_name = group_name
-        self.room_code = None
+        self.room_code = room_code
         self.players_in_group = 0
         self.board = Board(x_dim=self.x_dim, y_dim=self.y_dim)
         self.has_changes = False
@@ -153,7 +153,6 @@ class GameGroup:
             layer += 1
 
     def handle_player_event(self, event):
-        print(self.room_code)
         player_id = int(event['data']['player_id'])
         event_type = event['data']['type']
         selected_x = int(event['data']['selected']['x'])
@@ -251,7 +250,7 @@ class GameEngine(threading.Thread):
         if data['group_name'] in self.groups:
             self.groups[data['group_name']].handle_new_player(data)
         else:
-            self.groups[data['group_name']] = GameGroup(data['group_name'])
+            self.groups[data['group_name']] = GameGroup(data['group_name'], data['room_code'])
             self.groups[data['group_name']].handle_new_player(data)
 
     def handle_player_event(self, event):
