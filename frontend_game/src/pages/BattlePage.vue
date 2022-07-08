@@ -1,35 +1,22 @@
 <template>
-  <div class="row col-10 mx-auto my-5" id="battleinfo">
-    <div class="col" id="blue">
-      <h1>Red player</h1>
-      <div v-for="unit in red_units" :key="unit.id">
-        <div class="row">
-          <div class="col">{{ unit.name }}</div>
-          <div class="col">{{ unit.class }}</div>
-          <div class="col">{{ unit.hp }}</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-6" id="gamestat">
-      <h1>Red/blue Move</h1>
-      <h5>timer {{timer}}</h5>
+  <div>
+    <div>
+      <h1>Battle</h1>
       <h5>game state {{game_state}}</h5>
+      <h5>timer {{timer}}</h5>
+      <h5>winner {{winner}}</h5>
+      <h5>player id turn {{player_id_turn}}</h5>
     </div>
-    <div class="col" id="red">
-      <h1>Blue player</h1>
-      <div v-for="unit in blue_units" :key="unit.id">
-        <div class="row">
-          <div class="col">{{ unit.name }}</div>
-          <div class="col">{{ unit.class }}</div>
-          <div class="col">{{ unit.hp }}</div>
-        </div>
-      </div>
-    </div>
-    <div align="center" id="container_battle">
+    <div align="center">
       <canvas id="battle_field" class="canvas" :width=field_x_cells*field_render_multiplier :height=field_y_cells*field_render_multiplier />
     </div>
   </div>
 </template>
+
+
+
+
+
 
 
 <script>
@@ -58,7 +45,7 @@ import 'fabric';
                 field_x_cells: 10,
                 field_render_multiplier: 100,
                 timer: 0,
-                self_user_id: -1,
+                self_user_id: 1,
                 winner: '',
                 board: [[]]
             }
@@ -69,16 +56,11 @@ import 'fabric';
             this.canvas.on('mouse:down', this.PlayerMoveHandler);
         },
         created() {
-            // this.chatSocket = new WebSocket(
-            //     'ws://' + '127.0.0.1:8000' +
-            //     '/ws/chat/' + this.$route.params.id + '/');
-            // this.chatSocket = new Socket('ws:' + '127.0.0.1:8000' +
-            //     '/ws/chat/' + this.$route.params.id + '/');
             this.connect()
         },
         methods: {
             connect() {
-                this.self_user_id = this.$store.getters.USER_ID
+                //this.self_user_id = Number(this.$store.getters.USER_ID)
                 this.chatSocket = new WebSocket(
                     'ws:' + '127.0.0.1:8000/ws/battle/' + this.$route.params.id + '/?' + '7c0611170a9ab069554c674ad3a539a68f302e2e');
                 this.chatSocket.onopen = () => {
@@ -117,7 +99,6 @@ import 'fabric';
                 for (let y = 0; y < this.board.length; y++){
                   for (let x = 0; x < this.board.length; x++){
                     if (this.board[y][x] !== null) {
-                      console.log(this.board[y][x].unit)
                       this.canvas.add(new fabric.Triangle({
                         left: this.board[y][x].unit.x * this.field_render_multiplier,
                         top: this.board[y][x].unit.y * this.field_render_multiplier,
@@ -140,19 +121,31 @@ import 'fabric';
                     }
                   }
                 }
+                if (this.unit_selected && this.board[this.selected_cellY][this.selected_cellX] !== null){
+                  console.log(this.board[this.selected_cellY][this.selected_cellX].unit.max_attack_range)
+                        this.canvas.add(new fabric.Rect({
+                          left: (2 - this.board[this.selected_cellY][this.selected_cellX].unit.max_attack_range) * this.field_render_multiplier,
+                          top: (2 - this.board[this.selected_cellY][this.selected_cellX].unit.max_attack_range) * this.field_render_multiplier,
+                          height: (1 + 2 + 2 * this.board[this.selected_cellY][this.selected_cellX].unit.max_attack_range) * this.field_render_multiplier,
+                          width: (1 + 2 + 2 * this.board[this.selected_cellY][this.selected_cellX].unit.max_attack_range) * this.field_render_multiplier,
+                          fill: 'rgba(255, 0, 0, 0.4)',
+                          evented: false,
+                          selectable: false,
+                          game_object_type: 'attack_range'
+                        }));
+                      }else{
+                        this.unit_selected = false;
+                      }
               }
               this.canvas.renderAll();
             },
-
-
-
             disconnect() {
                 this.chatSocket.close();
                 this.socket_status = "disconnected";
             },
-            sendMove(e) {
+            sendMove(cellX, cellY) {
                 this.chatSocket.send(JSON.stringify({
-                    'message': this.form.textarea, 'username': sessionStorage.getItem("username")
+                    'data': {'type': 'move', 'selected': {'x': this.selected_cellX, 'y': this.selected_cellY}, 'move': {'x': cellX, 'y': cellY}}
                 }));
             },
             CordsIsAvailableToMove(cx, cy){
@@ -172,7 +165,6 @@ import 'fabric';
               let pointer = this.canvas.getPointer(e);
               let cellX = Math.trunc(pointer.x / this.field_render_multiplier);
               let cellY = Math.trunc(pointer.y / this.field_render_multiplier);
-              console.log(cellX, cellY)
               let objects = this.canvas.getObjects()
               if (this.unit_selected){
                 let check_res = this.CordsIsAvailableToMove(cellX, cellY)
@@ -182,14 +174,16 @@ import 'fabric';
                     this.selected_cellX = objects[check_res.index].left / this.field_render_multiplier
                     this.selected_cellY = objects[check_res.index].top / this.field_render_multiplier
                 }else {
-                  objects[this.selected_id].left = cellX * this.field_render_multiplier
-                  objects[this.selected_id].top = cellY * this.field_render_multiplier
+                  console.log('send...')
+                  this.sendMove(cellX, cellY)
+                  console.log('send complete...')
                   this.unit_selected = false
                 }
               }else {
                 for (let i = 0; i < objects.length; i++) {
                   if (objects[i].game_object_type === 'unit' &&
-                      (objects[i].left / this.field_render_multiplier === cellX && objects[i].top / this.field_render_multiplier === cellY)) {
+                      (objects[i].left / this.field_render_multiplier === cellX && objects[i].top / this.field_render_multiplier === cellY)
+                    && objects[i].player_id === this.self_user_id) {
                     this.unit_selected = true;
                     this.selected_id = i
                     this.selected_cellX = objects[i].left / this.field_render_multiplier
@@ -204,17 +198,5 @@ import 'fabric';
 </script>
 
 <style scoped>
-#gamestat{
-  text-align: center;
-}
-#red{
-  text-align: end;
-}
-#battleinfo{
-  margin-top: 15px;
-  margin-bottom: 10px;
-}
-#container_battle{
-  margin-top: 40px;
-}
+
 </style>
