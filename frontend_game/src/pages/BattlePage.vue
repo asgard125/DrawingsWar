@@ -173,8 +173,8 @@ import 'fabric';
                       let parent = this
                       fabric.Image.fromURL(url, function(myImg) {
                           myImg.set({
-                            left: parent.board[y][x].unit.x * parent.field_render_multiplier,
-                            top: parent.board[y][x].unit.y * parent.field_render_multiplier,
+                            left: (parent.board[y][x].unit.x) * parent.field_render_multiplier,
+                            top: (parent.board[y][x].unit.y) * parent.field_render_multiplier,
                             height: parent.field_render_multiplier,
                             width: parent.field_render_multiplier,
                             fill: '#000000',

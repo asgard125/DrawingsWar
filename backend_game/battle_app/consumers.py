@@ -16,15 +16,15 @@ def _get_user_deck(user=None):
     return PlayerBattleUnitSerializer(queryset, many=True).data
 
 
-def _is_room_exist_and_available(room_code=None):
+def _is_room_exist_and_available(room_code=None, user=None):
     rooms = BattleSession.objects.filter(room_code=room_code)
-    rooms = [obj for obj in rooms if obj.players_count < 2]
+    rooms = [obj for obj in rooms if (obj.players_count < 2 and obj.creator != user)]
     return len(rooms) > 0
 
 
 class PlayerConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        room_is_available = await sync_to_async(_is_room_exist_and_available, thread_sensitive=True)(room_code=self.scope['url_route']['kwargs']['room_name'])
+        room_is_available = await sync_to_async(_is_room_exist_and_available, thread_sensitive=True)(room_code=self.scope['url_route']['kwargs']['room_name'], user=self.scope['user'])
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'room_%s' % self.room_name
         if room_is_available and not self.scope['user'].is_anonymous:
