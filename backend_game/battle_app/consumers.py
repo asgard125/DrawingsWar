@@ -56,7 +56,7 @@ class PlayerConsumer(AsyncWebsocketConsumer):
         content['data']["player_id"] = self.user_id
         await self.channel_layer.send(
             "game_engine",
-            {"type": "player.event", "data": content['data']}
+            {"type": "player.event", 'group_name': self.room_group_name, "data": content['data']}
         )
 
     async def game_update(self, event):

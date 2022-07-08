@@ -109,7 +109,7 @@ class Board:
         return rendered_board
 
 
-class GameEngine(threading.Thread):
+class GameGroup:
     move_time = 16
     tick_rate = 1
     player_count = 2
@@ -117,7 +117,6 @@ class GameEngine(threading.Thread):
     y_dim = 5
 
     def __init__(self, group_name, **kwargs):
-        super(GameEngine, self).__init__(daemon=True, name="GameEngine", **kwargs)
         self.timer = 0
         self.player_turn = 0
         self.group_name = group_name
@@ -129,7 +128,6 @@ class GameEngine(threading.Thread):
         self.players = []
         self.winner = {'player_id': None, 'player_game_name': None}
         self.channel_layer = get_channel_layer()
-        self.player_lock = threading.Lock()
 
     def handle_new_player(self, data):
         new_player = Player(game_name=data['game_name'], player_id=data['player_id'], rating=data['rating'], turn=self.players_in_group)
@@ -170,20 +168,6 @@ class GameEngine(threading.Thread):
                 self.timer = 0
                 self.player_turn = (self.player_turn + 1) % self.player_count
         self.handle_win()
-
-    def run(self) -> None:
-        print('game engine started', self.group_name)
-        while True:
-            if self.game_state == 'started':
-                self.send_game_state()
-                self.timer = (self.timer + self.tick_rate) % self.move_time
-                if self.timer == 0:
-                    self.player_turn = (self.player_turn + 1) % self.player_count
-            else:
-                async_to_sync(self.channel_layer.group_send)(
-                    self.group_name, {"type": "game.update", 'game': {"state": self.game_state, 'winner': self.winner}}
-                )
-            time.sleep(self.tick_rate)
 
     def send_game_state(self):
         state_json = {"type": "game.update", 'game': {
@@ -231,5 +215,46 @@ class GameEngine(threading.Thread):
             looser_history.save()
             room = BattleSession.objects.get(room_code=self.room_code)
             room.delete()
+
+
+class GameEngine(threading.Thread):
+    move_time = 16
+    tick_rate = 1
+    player_count = 2
+    x_dim = 10
+    y_dim = 5
+
+    def __init__(self, **kwargs):
+        super(GameEngine, self).__init__(daemon=True, name="GameEngine", **kwargs)
+        self.groups = {}
+        self.channel_layer = get_channel_layer()
+        self.player_lock = threading.Lock()
+
+    def run(self) -> None:
+        print('game engine started')
+        while True:
+            for group in self.groups.keys():
+                if self.groups[group].game_state == 'started':
+
+                    self.groups[group].send_game_state()
+                    self.groups[group].timer = (self.timer + self.tick_rate) % self.move_time
+                    if self.groups[group].timer == 0:
+                        self.groups[group].player_turn = (self.player_turn + 1) % self.player_count
+                else:
+                    async_to_sync(self.channel_layer.group_send)(
+                        group, {"type": "game.update", 'game': {"state": self.groups[group].game_state,
+                                                                'winner': self.groups[group].winner}}
+                    )
+            time.sleep(self.tick_rate)
+
+    def handle_new_player(self, data):
+        if data['group_name'] in self.groups:
+            self.groups[data['group_name']].handle_new_player(data)
+        else:
+            self.groups[data['group_name']] = GameGroup(data['group_name'])
+            self.groups[data['group_name']].handle_new_player(data)
+
+    def handle_player_event(self, event):
+        self.groups[event['group_name']].handle_player_event(event)
 
 
