@@ -17,6 +17,7 @@
       <h1>{{ text_status }}</h1>
       <h2>{{ text_turn }}</h2>
       <h5>timer {{timer}}</h5>
+      <h5>Победитель {{winner}}</h5>
     </div>
     <div class="col" id="red">
       <h1>Соперник</h1>
@@ -147,11 +148,11 @@ import 'fabric';
 
                         }
                         else if (this.board[y][x].unit.battle_class === 'damager'){
-                          url = require('../assets/damager.jpg')
+                          url = require('../assets/ranger.jpg')
 
                         }
                         else if (this.board[y][x].unit.battle_class === 'ranger'){
-                          url = require('../assets/ranger.jpg')
+                          url = require('../assets/damager.jpg')
 
                         }
                       }else{
