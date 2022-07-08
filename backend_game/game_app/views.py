@@ -66,10 +66,7 @@ class PlayerBattleUnitAPIView(GenericViewSet):
     @action(detail=False, methods=['put'])
     def market_purchase(self, request):
         if 'id' in request.data:
-            if request.data['id'].isdigit():
-                playerunit = get_object_or_404(PlayerBattleUnit, pk=int(request.data['id']))
-            else:
-                return Response({'status': 'fail', 'details': 'wrong base unit id'})
+            playerunit = get_object_or_404(PlayerBattleUnit, pk=int(request.data['id']))
         else:
             return Response({'status': 'fail', 'details': 'wrong base unit id'})
         if request.user == playerunit.user:
