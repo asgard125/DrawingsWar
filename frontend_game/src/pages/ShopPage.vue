@@ -13,7 +13,7 @@
         <div class="col"> Макс зщт: {{ char.max_shield_level }}</div>
         <div class="col"> Макс здр: {{ char.max_health_points }}</div>
         <div class="col">
-          <button @click="market_purchase(char.id)" id="fight_btn" class="btn btn-primary bg-black" type="button">
+          <button @click="shop(char.id)" id="fight_btn" class="btn btn-primary bg-black" type="button">
             Купить
           </button>
         </div>
@@ -57,7 +57,7 @@ export default {
         })
   },
   methods: {
-    market_purchase(id) {
+    shop(id) {
       axios
           .post(axios.defaults.baseURL + "api/v1/playerbattleunit/", {
             id: id
