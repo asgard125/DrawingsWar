@@ -113,8 +113,8 @@ class GameEngine(threading.Thread):
     move_time = 16
     tick_rate = 1
     player_count = 2
-    x_dim = 5
-    y_dim = 10
+    x_dim = 10
+    y_dim = 5
 
     def __init__(self, group_name, **kwargs):
         super(GameEngine, self).__init__(daemon=True, name="GameEngine", **kwargs)
@@ -139,6 +139,7 @@ class GameEngine(threading.Thread):
         room.players_count += 1
         room.save()
         layer = 0
+        border_pos = 0
         if self.players_in_group == 1:
             border_pos = 0
         elif self.players_in_group == 2:

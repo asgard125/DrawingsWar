@@ -24,11 +24,9 @@ def _is_room_exist_and_available(room_code=None):
 class PlayerConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         room_is_available = await sync_to_async(_is_room_exist_and_available, thread_sensitive=True)(room_code=self.scope['url_route']['kwargs']['room_name'])
-        print(room_is_available)
+        self.room_name = self.scope['url_route']['kwargs']['room_name']
+        self.room_group_name = 'room_%s' % self.room_name
         if room_is_available and not self.scope['user'].is_anonymous:
-
-            self.room_name = self.scope['url_route']['kwargs']['room_name']
-            self.room_group_name = 'room_%s' % self.room_name
             self.user_deck = await sync_to_async(_get_user_deck, thread_sensitive=True)(user=self.scope['user'])
             self.user_game_name = self.scope['user'].game_name
             self.user_rating = self.scope['user'].rating
