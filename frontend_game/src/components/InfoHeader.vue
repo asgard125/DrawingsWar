@@ -12,6 +12,9 @@
           <li>
             <router-link to="shop" class="nav-link px-2 text-white">Shop</router-link>
           </li>
+          <li>
+            <router-link to="trading" class="nav-link px-2 text-white">Trading</router-link>
+          </li>
         </ul>
         <div class="row my-0">
           <div class="col p-2 bg-gradient">Уровень: {{ info_header.level }}</div>
