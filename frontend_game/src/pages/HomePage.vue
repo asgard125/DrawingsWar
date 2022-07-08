@@ -39,12 +39,10 @@ export default {
           const user_id = response.data.user.id
           localStorage.setItem('user_id', user_id);
           this.$store.commit("setUserId")
-          console.log(this.$store.getters.TOKEN)
         })
     axios
         .get(axios.defaults.baseURL + "api/v1/playerbattleunit")
         .then((response) => {
-          console.log(response.data)
           const all_chars = response.data
           this.deck_chars = all_chars.filter(char => char.in_deck === true)
         })
@@ -60,7 +58,6 @@ export default {
               name: 'battle',
               params: {id: room_id}
             })
-            console.log(response.data.room_code)
           })
     },
   }

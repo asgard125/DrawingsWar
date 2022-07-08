@@ -2,12 +2,21 @@
   <div>
     <div>
       <h1>Battle</h1>
+      <h5>game state {{game_state}}</h5>
+      <h5>timer {{timer}}</h5>
+      <h5>winner {{winner}}</h5>
+      <h5>player id turn {{player_id_turn}}</h5>
     </div>
     <div align="center">
       <canvas id="battle_field" class="canvas" :width=field_x_cells*field_render_multiplier :height=field_y_cells*field_render_multiplier />
     </div>
   </div>
 </template>
+
+
+
+
+
 
 
 <script>
@@ -23,13 +32,22 @@ import 'fabric';
         data() {
             return {
                 socket_status: 'disconnect',
-                game_status: '',
+                text_status: 'Ожидание игроков...',
+                game_state: '',
+                player_id_turn: -1,
+                unit_selected: false,
+                selected_id: -1,
+                selected_cellX: -1,
+                selected_cellY: -1,
                 field_width: 1000,
                 field_height: 500,
                 field_y_cells: 5,
                 field_x_cells: 10,
                 field_render_multiplier: 100,
-                field: [[]]
+                timer: 0,
+                self_user_id: -1,
+                winner: '',
+                board: [[]]
             }
         },
         mounted() {
@@ -43,10 +61,21 @@ import 'fabric';
                       width: this.field_render_multiplier,
                       fill: (x+y) % 2 === 0 ? '#70bf5d' : '#a4e49d',
                       evented: false,
-                      selectable: false
+                      selectable: false,
+                      game_object_type: 'field'
                     }));
               }
             }
+             this.canvas.add(new fabric.Triangle({
+                left: 0,
+                top: 0 ,
+                height: this.field_render_multiplier,
+                width: this.field_render_multiplier,
+                fill: '#000000',
+                evented: false,
+                selectable: false,
+                game_object_type: 'unit'
+              }));
             this.canvas.renderAll();
             this.canvas.on('mouse:down', this.PlayerMoveHandler);
         },
@@ -61,53 +90,80 @@ import 'fabric';
         methods: {
             connect() {
                 this.chatSocket = new WebSocket(
-                    'ws:' + '127.0.0.1:8000/ws/battle/' + this.$route.params.id + '/');
+                    'ws:' + '127.0.0.1:8000/ws/battle/' + this.$route.params.id + '/?1a97996d96869695d9e94a088f8b2ed962190494');
                 this.chatSocket.onopen = () => {
-                    this.status = "connected";
-                    this.dialogs.push({event: "Connected to", message: 'WomsChat'})
+                    this.socket_status = "connected";
                     this.chatSocket.onmessage = ({data}) => {
-                        this.dialogs.push(JSON.parse(data));
-                        console.log(data);
-                        console.log(this.dialogs)
+                        let parsed_data = JSON.parse(data)
+                      this.game_state = parsed_data.state
+                        if (parsed_data.state === 'started') {
+                          this.board = parsed_data.board
+                          this.player_id_turn = parsed_data.player_id_turn
+                          this.timer = parsed_data.timer
+                          console.log(this.board[0])
+                        }else if (parsed_data.state === 'over'){
+                          this.winner = parsed_data.winner
+                        }
                     };
                 };
             },
-            // Загрузка диалога
-            // loadDialog() {
-            //     console.log(this.chatSocket.onmessage);
-            //     console.log(this.chatSocket)
-            // },
             disconnect() {
                 this.chatSocket.close();
-                this.status = "disconnected";
-                this.dialogs = [];
+                this.socket_status = "disconnected";
             },
-            // Отправка сообщения
-            sendMes(e) {
+            sendMove(e) {
                 this.chatSocket.send(JSON.stringify({
                     'message': this.form.textarea, 'username': sessionStorage.getItem("username")
                 }));
-                // this.dialogs.push({event: "Sent message", message: this.form.textarea});
-                this.form.textarea = "";
             },
-            setName(){
-                sessionStorage.setItem("username", this.userName);
+            CordsIsAvailableToMove(cx, cy){
+              let objects = this.canvas.getObjects()
+              for (let i = 0; i < objects.length; i++) {
+                  if (objects[i].game_object_type === 'unit' &&
+                      (objects[i].left / this.field_render_multiplier === cx && objects[i].top / this.field_render_multiplier === cy)) {
+                    if (objects[i].player_id === this.self_user_id){
+                      return {status: 'self unit', index: i}
+                    }
+                  }
+                }
+             // return 'no way'
+              return {status: 'ok'}
             },
             PlayerMoveHandler(e){
-            let pointer = this.canvas.getPointer(e);
-            let cellX = Math.trunc(pointer.x / this.field_render_multiplier);
-            let cellY = Math.trunc(pointer.y / this.field_render_multiplier);
-            console.log(cellX, cellY)
+              let pointer = this.canvas.getPointer(e);
+              let cellX = Math.trunc(pointer.x / this.field_render_multiplier);
+              let cellY = Math.trunc(pointer.y / this.field_render_multiplier);
+              console.log(cellX, cellY)
+              let objects = this.canvas.getObjects()
+              if (this.unit_selected){
+                let check_res = this.CordsIsAvailableToMove(cellX, cellY)
+                if (check_res.status === 'self unit') {
+                    this.unit_selected = true;
+                    this.selected_id = check_res.index
+                    this.selected_cellX = objects[check_res.index].left / this.field_render_multiplier
+                    this.selected_cellY = objects[check_res.index].top / this.field_render_multiplier
+                }else {
+                  objects[this.selected_id].left = cellX * this.field_render_multiplier
+                  objects[this.selected_id].top = cellY * this.field_render_multiplier
+                  this.unit_selected = false
+                }
+              }else {
+                for (let i = 0; i < objects.length; i++) {
+                  if (objects[i].game_object_type === 'unit' &&
+                      (objects[i].left / this.field_render_multiplier === cellX && objects[i].top / this.field_render_multiplier === cellY)) {
+                    this.unit_selected = true;
+                    this.selected_id = i
+                    this.selected_cellX = objects[i].left / this.field_render_multiplier
+                    this.selected_cellY = objects[i].top / this.field_render_multiplier
+                  }
+                }
+              }
+              this.canvas.renderAll();
             },
         }
     }
 </script>
 
 <style scoped>
-    .dialog {
-        border: 1px solid #000;
-    }
-    .btn-send {
-        margin: 60px 0 0 15px;
-    }
+
 </style>

@@ -7,7 +7,7 @@ import BattlePage from "@/pages/BattlePage";
 
 const routes = [
   {
-    path: '/',
+    path: '/home',
     name: 'home',
     component: HomePage
   },

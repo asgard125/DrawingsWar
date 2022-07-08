@@ -1,24 +1,26 @@
 <template>
-  <body class="text-center">
+  <div class="col-6">
+    <body class="text-center">
 
-  <main class="form-signin w-100 m-auto">
-    <form>
-      <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
-      <div class="form-floating">
-        <input v-model="username" type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
-        <label  for="floatingInput">Email address</label>
-      </div>
-      <div class="form-floating">
-        <input v-model="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
-        <label for="floatingPassword">Password</label>
-      </div>
+    <main class="form-signin w-100 m-auto">
+      <form @submit.prevent>
+        <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+        <div class="form-floating">
+          <input v-model="username" type="text" class="form-control" id="floatingInput" placeholder="Username">
+          <label  for="floatingInput">Username</label>
+        </div>
+        <div class="form-floating">
+          <input v-model="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
+          <label for="floatingPassword">Password</label>
+        </div>
 
 
-      <button @click="login" class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
-      <p class="mt-5 mb-3 text-muted">© 2017–2022</p>
-    </form>
-  </main>
-  </body>
+        <button @click="login" class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
+        <p class="mt-5 mb-3 text-muted">© 2017–2022</p>
+      </form>
+    </main>
+    </body>
+  </div>
 </template>
 
 <script>
@@ -44,10 +46,9 @@ export default {
             const token = response.data.auth_token;
             axios.defaults.headers.common['Authorization'] = 'Token ' + token;
             localStorage.setItem('token', token);
-
-
-            this.$router.push("/");
+            this.$router.push("home");
           })
+
     }
   }
 }
